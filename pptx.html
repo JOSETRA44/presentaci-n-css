@@ -53,26 +53,27 @@
             box-sizing: border-box;
             
             /* Efecto Glassmorphism (inspirado en tu maqueta) */
-            background: rgba(10, 20, 40, 0.7);
-            backdrop-filter: blur(10px) saturate(120%);
-            -webkit-backdrop-filter: blur(10px) saturate(120%);
+            background: rgba(10, 20, 40, 0.75); /* Un poco más opaco */
+            backdrop-filter: blur(12px) saturate(150%);
+            -webkit-backdrop-filter: blur(12px) saturate(150%);
             
-            /* Borde Neón (inspirado en la estética) */
-            border: 1px solid rgba(0, 190, 255, 0.3);
+            /* Borde con Gradiente Sutil (más profesional) */
+            border: 1.5px solid;
+            border-image-slice: 1;
+            border-image-source: linear-gradient(to bottom right, rgba(0, 190, 255, 0.6), rgba(138, 43, 226, 0.4));
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5); /* Sombra más pronunciada */
             
             color: #fff;
-            /* Evita que el contenido interno se desborde del slide */
             overflow: hidden;
         }
 
         /* --- 3. Estilos de Contenido Interno --- */
         h1, h2, h3, h4 {
             font-weight: 700;
-            /* Color Neón/Cian */
             color: #00BFFF; 
-            text-shadow: 0 0 10px rgba(0, 190, 255, 0.5);
+            /* Resplandor de neón más difuso y realista */
+            text-shadow: 0 0 8px rgba(0, 190, 255, 0.4), 0 0 20px rgba(0, 190, 255, 0.3);
             margin-top: 0;
         }
         
@@ -130,9 +131,21 @@
             font-size: 8rem; /* Reducido de 9rem para evitar desbordes */
             font-weight: 900; /* Requiere importar 900 de Montserrat */
             color: #fff;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3), 0 0 40px rgba(0, 190, 255, 0.4);
             line-height: 1;
             margin: 0;
+            animation: fadeIn-up 1.5s 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        }
+
+        @keyframes fadeIn-up {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .titulo-left p {
@@ -893,11 +906,11 @@
 
     <script>
         // --- SCRIPT 1: FONDO DE HUMO DINÁMICO (THREE.JS) ---
-        let scene, camera, renderer, smokeParticles = [];
+        let scene, camera, renderer, smokeParticles = [], clock, pointLight1, pointLight2;
         const simplex = new SimplexNoise();
-        const clock = new THREE.Clock(); // Clock se crea una sola vez
 
         function initThreeJS() {
+            clock = new THREE.Clock();
             const canvas = document.getElementById('bg-canvas');
             
             scene = new THREE.Scene();
@@ -907,28 +920,41 @@
             renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
 
-            const light = new THREE.DirectionalLight(0x00BFFF, 0.8); // Aumentar intensidad de la luz
-            light.position.set(-1, 0, 1);
-            scene.add(light);
+            // --- LUCES MEJORADAS ---
+            const ambientLight = new THREE.AmbientLight(0x101030, 0.5); // Luz ambiental azulada oscura
+            scene.add(ambientLight);
 
+            // Luz tipo neón cian
+            pointLight1 = new THREE.PointLight(0x00BFFF, 2.5, 1200, 2);
+            pointLight1.position.set(200, 200, 250);
+            scene.add(pointLight1);
+
+            // Luz tipo neón magenta/púrpura
+            pointLight2 = new THREE.PointLight(0x8A2BE2, 2.5, 1200, 2);
+            pointLight2.position.set(-200, -200, 250);
+            scene.add(pointLight2);
+
+            // --- HUMO MEJORADO ---
             const smokeTexture = new THREE.TextureLoader().load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/212131/smoke.png');
-            const smokeMaterial = new THREE.MeshLambertMaterial({ 
-                color: 0x00BFFF, 
-                map: smokeTexture, 
-                transparent: true, 
-                opacity: 0.5 // Aumentar opacidad
+            // Usamos MeshStandardMaterial para que reaccione a las luces
+            const smokeMaterial = new THREE.MeshStandardMaterial({
+                map: smokeTexture,
+                transparent: true,
+                opacity: 0.15, // Más sutil para un look más "etéreo"
+                emissive: 0x000000, // No emite luz propia
+                depthWrite: false, // Evita problemas de renderizado de transparencia
             });
 
-            const smokeGeo = new THREE.PlaneGeometry(400, 400); // Hacer partículas más grandes
+            const smokeGeo = new THREE.PlaneGeometry(500, 500); // Partículas más grandes
 
-            for (let p = 0; p < 200; p++) { // Aumentar número de partículas
-                let particle = new THREE.Mesh(smokeGeo, smokeMaterial);
+            for (let p = 0; p < 70; p++) { // Menos partículas pero más grandes
+                let particle = new THREE.Mesh(smokeGeo, smokeMaterial.clone());
                 particle.position.set(
-                    (Math.random() - 0.5) * 1200,
-                    (Math.random() - 0.5) * 1200,
-                    (Math.random() - 0.5) * 1000
+                    (Math.random() - 0.5) * 1500, // Más dispersas
+                    (Math.random() - 0.5) * 1500,
+                    (Math.random() - 0.5) * 400
                 );
-                particle.rotation.z = Math.random() * 360;
+                particle.rotation.z = Math.random() * 2 * Math.PI;
                 scene.add(particle);
                 smokeParticles.push(particle);
             }
@@ -938,17 +964,32 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            let delta = clock.getDelta();
+            const delta = clock.getDelta();
+            const elapsedTime = clock.getElapsedTime();
 
+            // Animación de las luces
+            pointLight1.position.x = Math.sin(elapsedTime * 0.3) * 400;
+            pointLight1.position.y = Math.cos(elapsedTime * 0.4) * 400;
+            pointLight2.position.x = Math.sin(elapsedTime * 0.2) * -400;
+            pointLight2.position.y = Math.cos(elapsedTime * 0.5) * -400;
+
+            // Animación de las partículas de humo
             smokeParticles.forEach((particle) => {
-                let noise = simplex.noise3D(particle.position.x * 0.001, particle.position.y * 0.001, Date.now() * 0.00015);
-                particle.rotation.z += delta * 0.15; // Rotación más lenta
-                particle.position.x += noise * 4;
-                particle.position.y -= delta * 50; // Movimiento más constante y visible
+                const noise = simplex.noise3D(
+                    particle.position.x * 0.0005,
+                    particle.position.y * 0.0005,
+                    elapsedTime * 0.1
+                );
 
-                // Si la partícula se va muy abajo, la reposicionamos arriba
-                if (particle.position.y < -600) {
-                    particle.position.y = 600;
+                particle.rotation.z += delta * 0.05; // Rotación mucho más lenta
+
+                // Movimiento más orgánico y lento basado en el ruido
+                particle.position.x += noise * 0.5;
+                particle.position.y += (noise * 0.5) - (delta * 15); // Ligero movimiento ascendente/descendente
+
+                // Reposicionar si se aleja mucho
+                if (particle.position.y < -800) {
+                    particle.position.y = 800;
                 }
             });
 
