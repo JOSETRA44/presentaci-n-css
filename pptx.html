@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educación Sexual Integral: Presentación 3D</title>
+    
+    <!-- Importar Fuente de Google --><link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 1. Estilos Globales y de Fondo --- */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 300;
+            color: #f0f0f0;
+            /* Inspirado en la estética "Ocean" y "WASM" */
+            background: #050810; /* Azul muy oscuro, casi negro */
+            overflow: hidden; /* Oculta barras de scroll */
+        }
+
+        /* El lienzo de Three.js para el fondo de partículas */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Detrás de todo */
+        }
+
+        /* --- 2. Estilos de Impress.js y Diapositivas --- */
+
+        /* Oculta los steps que no están activos */
+        .step {
+            opacity: 0;
+            transition: opacity 1s;
+        }
+        .step.active {
+            opacity: 1;
+        }
+
+        /* Estilo principal de cada diapositiva (Glassmorphism + Neón) */
+        .slide {
+            display: block;
+            width: 1200px; /* Ancho estándar para contenido */
+            height: 700px; /* Alto */
+            padding: 40px 60px;
+            box-sizing: border-box;
+            
+            /* Efecto Glassmorphism (inspirado en tu maqueta) */
+            background: rgba(10, 20, 40, 0.7);
+            backdrop-filter: blur(10px) saturate(120%);
+            -webkit-backdrop-filter: blur(10px) saturate(120%);
+            
+            /* Borde Neón (inspirado en la estética) */
+            border: 1px solid rgba(0, 190, 255, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            
+            color: #fff;
+            /* Evita que el contenido interno se desborde del slide */
+            overflow: hidden;
+        }
+
+        /* --- 3. Estilos de Contenido Interno --- */
+        h1, h2, h3, h4 {
+            font-weight: 700;
+            /* Color Neón/Cian */
+            color: #00BFFF; 
+            text-shadow: 0 0 10px rgba(0, 190, 255, 0.5);
+            margin-top: 0;
+        }
+        
+        h1 { font-size: 3.5rem; }
+        h2 { font-size: 2.8rem; }
+        h3 { font-size: 2rem; }
+        p, li { font-size: 1.2rem; line-height: 1.6; }
+        ul { padding-left: 20px; }
+        a { color: #00BFFF; }
+
+        /* Estilo para la diapositiva de Título (NUEVO DISEÑO "OCEAN") */
+        #titulo {
+            padding: 0; /* Quitamos padding para el diseño a pantalla completa */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .titulo-container {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr; /* Columna izquierda más grande */
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            padding: 60px;
+            box-sizing: border-box;
+        }
+        
+        .titulo-left {
+            position: relative;
+            z-index: 2; /* Aseguramos que el texto esté por encima */
+        }
+        
+        .titulo-left .sub-header {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: #00BFFF;
+            letter-spacing: 2px;
+            margin-bottom: -10px;
+            position: relative;
+        }
+        /* Línea al lado del sub-header */
+        .titulo-left .sub-header::before {
+            content: "";
+            display: block;
+            width: 50px;
+            height: 2px;
+            background: #00BFFF;
+            position: absolute;
+            left: -60px;
+            top: 50%;
+        }
+
+        .titulo-left .main-header {
+            font-size: 8rem; /* Reducido de 9rem para evitar desbordes */
+            font-weight: 900; /* Requiere importar 900 de Montserrat */
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            line-height: 1;
+            margin: 0;
+        }
+        
+        .titulo-left p {
+            font-size: 1.1rem;
+            font-weight: 300;
+            line-height: 1.7;
+            max-width: 500px; /* Ancho del párrafo */
+            color: #ccc;
+        }
+        
+        .titulo-right {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+        
+        /* Animación del Condón SVG */
+        #condom-svg {
+            width: 90%; /* Más grande */
+            max-width: 500px; /* Máximo ancho */
+            position: absolute;
+            right: -100px; /* Que se salga un poco más para ser imponente */
+            z-index: 0; /* Detrás del texto */
+            opacity: 0.8;
+            filter: drop-shadow(0 0 30px rgba(0, 190, 255, 0.5));
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(-5deg); }
+            50% { transform: translateY(-30px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(-5deg); }
+        }
+
+        
+        /* Contenedor para las 3 tarjetas del overview */
+        .overview-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+        .overview-card {
+            width: 300px;
+            height: 400px;
+            padding: 30px;
+            text-align: left; /* Alineado a la izquierda para más texto */
+            /* Glassmorphism más ligero para las tarjetas */
+            background: rgba(20, 40, 70, 0.7);
+            border: 1px solid rgba(0, 190, 255, 0.4);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+        .overview-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 190, 255, 0.5);
+        }
+        .overview-card h3 {
+            font-size: 1.8rem;
+            text-align: center; /* Centramos el título */
+            margin-bottom: 20px; /* Añadimos espacio */
+        }
+        .overview-card p {
+            font-size: 1rem;
+            line-height: 1.5; /* Mejoramos legibilidad */
+        }
+
+        /* --- 4. Estilos para Tarjetas de Métodos (NUEVAS FLIP CARDS) --- */
+        
+        /* Párrafo de introducción para las secciones de métodos */
+        .metodo-intro {
+            font-size: 1.1rem;
+            font-weight: 300;
+            line-height: 1.6;
+            color: #ccc;
+            max-width: 95%; /* Que no ocupe todo el ancho */
+            margin: -10px 0 20px 0; /* Espacio después del h3 y antes del grid */
+        }
+        
+        .metodos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            height: calc(100% - 180px); /* Altura ajustada (era 100px) para dar espacio al <p> */
+            overflow-y: auto; 
+            padding-top: 10px; /* Reducido un poco */
+            perspective: 1500px; /* Necesario para el 3D flip */
+        }
+
+        /* Custom Scrollbar */
+        .metodos-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+        .metodos-grid::-webkit-scrollbar-thumb {
+            background: rgba(0, 190, 255, 0.5);
+            border-radius: 4px;
+        }
+        .metodos-grid::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .metodo-card {
+            height: 280px; /* Alto fijo para la tarjeta */
+            background: transparent;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+        
+        .metodo-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+        
+        /* Estilo para el clic (añadido por JS) */
+        .metodo-card.is-flipped .metodo-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .metodo-card-front, .metodo-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden; /* Safari */
+            backface-visibility: hidden;
+            border-radius: 10px;
+            box-sizing: border-box; /* Asegura que el padding no desborde */
+        }
+
+        /* LADO FRONTAL (Imagen y Título) */
+        .metodo-card-front {
+            background: rgba(5, 8, 16, 0.8);
+            border: 1px solid rgba(0, 190, 255, 0.2);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .metodo-card-front h4 {
+            margin: 10px 0 0 0;
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: #eee;
+        }
+        
+        .metodo-card-front img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        /* LADO TRASERO (Información) */
+        .metodo-card-back {
+            background: rgba(20, 40, 70, 0.95); /* Un poco más opaco */
+            border: 1px solid rgba(0, 190, 255, 0.5);
+            color: white;
+            padding: 20px;
+            transform: rotateY(180deg);
+            text-align: left;
+            overflow-y: auto; /* Control de desborde */
+        }
+        
+        /* Scrollbar sutil para el reverso de la tarjeta */
+        .metodo-card-back::-webkit-scrollbar { width: 6px; }
+        .metodo-card-back::-webkit-scrollbar-thumb { background: rgba(0, 190, 255, 0.5); border-radius: 3px; }
+        .metodo-card-back::-webkit-scrollbar-track { background: transparent; }
+
+        .metodo-card-back h5 {
+            font-size: 1.1rem;
+            color: #00BFFF;
+            margin: 0 0 10px 0;
+            text-align: center;
+        }
+        
+        .metodo-card-back ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .metodo-card-back li {
+            font-size: 0.9rem; /* Texto más pequeño para que quepa */
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+         .metodo-card-back li strong {
+            color: #00BFFF;
+         }
+        
+        
+        /* --- 5. Estilos para Mitos y Bibliografía (Sin cambios) --- */
+        
+        /* Estilo para Mitos y Realidades */
+        .mito-realidad {
+            margin-bottom: 25px;
+        }
+        .mito-realidad h4 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+        .mito-realidad .mito {
+            color: #FF6B6B; /* Rojo para Mitos */
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+        .mito-realidad .realidad {
+            color: #6BFF6B; /* Verde para Realidades */
+            text-shadow: 0 0 10px rgba(107, 255, 107, 0.5);
+        }
+        .mito-realidad p {
+            font-size: 1.1rem;
+            margin: 0;
+            padding-left: 10px;
+            border-left: 3px solid #6BFF6B;
+        }
+        .mito-realidad .mito + p { /* Estilo para el párrafo del mito */
+            border-left: 3px solid #FF6B6B;
+        }
+        
+        /* Estilo para la Bibliografía */
+        #biblio ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        #biblio li {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            border-left: 3px solid #00BFFF;
+            padding-left: 10px;
+        }
+        
+        
+    </style>
+</head>
+<body>
+
+    <!-- 1. El Fondo de Partículas 3D (Three.js) --><canvas id="bg-canvas"></canvas>
+
+    <!-- 3. El Contenedor de la Presentación (Impress.js) --><div id="impress" data-transition-duration="1500">
+
+        <!-- ... (código del mapa de navegación sin cambios) ... --><!-- SLIDE 1: TÍTULO (REDISEÑADO) --><div id="titulo" class="step slide" data-x="0" data-y="0" data-z="1000" data-scale="1.5">
+            <div class="titulo-container">
+                <div class="titulo-left">
+                    <span class="sub-header">GUÍA DE</span>
+                    <h1 class="main-header">SEXUALIDAD RESPONSABLE</h1>
+                    <p>Una guía moderna para entender tu cuerpo, tomar decisiones informadas sobre anticoncepción y construir relaciones saludables basadas en el respeto mutuo.</p>
+                </div>
+                <div class="titulo-right">
+                    <!-- Vector de Condón (SVG) --><svg id="condom-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="rgba(0, 190, 255, 0.8)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M30 75 C 30 75, 28 55, 30 45 C 32 35, 40 30, 50 30 C 60 30, 68 35, 70 45 C 72 55, 70 75, 70 75 Z" />
+                        <path d="M28 75 C 28 75, 25 80, 50 80 C 75 80, 72 75, 72 75" stroke-width="3" />
+                        <path d="M28 75 A 2 2 0 0 1 28 80" stroke="none" />
+                        <path d="M72 75 A 2 2 0 0 0 72 80" stroke="none" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: OVERVIEW (El Mapa Conceptual) --><div id="overview" class="step" data-x="3000" data-y="1000" data-z="0" data-scale="8">
+            <!-- Este slide es la vista general, como tu maqueta --><div class="overview-container">
+                <div class="overview-card">
+                    <h3>Métodos Anticonceptivos</h3>
+                    <p>Explora un catálogo visual de métodos hormonales, de barrera, DIUs y más. Descubre su eficacia, ventajas y cómo funcionan al hacer clic en cada tarjeta.</p>
+                </div>
+                <div class="overview-card">
+                    <h3>Mitos y Realidades</h3>
+                    <p>Separamos la ficción de los hechos. Abordamos los mitos más comunes sobre anticoncepción y sexualidad para darte información clara y veraz.</p>
+                </div>
+                <div class="overview-card">
+                    <h3>Relaciones Saludables</h3>
+                    <p>Define los pilares de una relación sana: comunicación, respeto, consentimiento y límites. Aprende también a identificar las señales de alerta.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 
+            CLUSTER 1: MÉTODOS ANTICONCEPTIVOS 
+            Posicionado a la izquierda del overview.
+            Usaremos data-rotate-y para crear un "carrusel" 3D con las sub-slides.
+        --><div id="metodos" class="step slide" data-x="-2000" data-y="1000" data-z="0" data-scale="3">
+            <h2>Métodos Anticonceptivos</h2>
+            <p>Se clasifican en varias categorías principales. Usa las flechas para explorar las sub-secciones.</p>
+        </div>
+        
+        <!-- MÉTODOS 1: Hormonales --><div id="metodos_hormonales" class="step slide" data-x="-2000" data-y="1000" data-z="-1500" data-rotate-y="45" data-scale="2.5">
+            <h3>Métodos Hormonales</h3>
+            <p class="metodo-intro">
+                Utilizan hormonas (estrógeno y/o progestina) para impedir la ovulación o espesar el moco cervical, dificultando el paso del esperma.
+            </p>
+            <div class="metodos-grid">
+                
+                <!-- Tarjeta 1: Píldora --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://img.freepik.com/fotos-premium/diferentes-pildoras-anticonceptivas-orales-sobre-fondo-blanco_392895-222833.jpg?w=2000" alt="Píldora Anticonceptiva Oral">
+                            <h4>Píldora Anticonceptiva Oral</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>Píldora Anticonceptiva Oral</h5>
+                            <ul>
+                                <li><strong>Descripción:</strong> Tabletas que se toman diariamente, generalmente a la misma hora.</li>
+                                <li><strong>Mecanismo:</strong> Inhibe la ovulación y altera el moco cervical.</li>
+                                <li><strong>Eficacia:</strong> 91–99% (si se usa correctamente).</li>
+                                <li><strong>Ventajas:</strong> Regula el ciclo menstrual, disminuye el acné y los cólicos.</li>
+                                <li><strong>Desventajas:</strong> Requiere constancia; puede causar leves cambios hormonales.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 2: Minipíldora --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://tse3.mm.bing.net/th/id/OIP.R9SZ5Il237ZEMoI1QnHySAHaFj?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Minipíldora">
+                            <h4>Píldora de solo progestina</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>Píldora de solo progestina (minipíldora)</h5>
+                            <ul>
+                                <li><strong>Descripción:</strong> Contiene solo progestina (sin estrógeno).</li>
+                                <li><strong>Ideal para:</strong> Mujeres lactantes o con contraindicaciones al estrógeno.</li>
+                                <li><strong>Eficacia:</strong> Similar a la combinada.</li>
+                                <li><strong>Desventaja:</strong> Se debe tomar todos los días a la misma hora exacta.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 3: Inyección --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://cdn2.actitudfem.com/media/files/media/files/vacuna_influenza-2_3_0.jpg" alt="Inyección Anticonceptiva">
+                            <h4>Inyección Anticonceptiva</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>Inyección Anticonceptiva</h5>
+                            <ul>
+                                <li><strong>Descripción:</strong> Inyección intramuscular o subcutánea cada 1 o 3 meses.</li>
+                                <li><strong>Mecanismo:</strong> Libera progestina que inhibe la ovulación.</li>
+                                <li><strong>Eficacia:</strong> 94–99%.</li>
+                                <li><strong>Ventajas:</strong> Discreta y cómoda.</li>
+                                <li><strong>Desventajas:</strong> Puede alterar el ciclo o retrasar el retorno de la fertilidad.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 4: Implante --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://tse4.mm.bing.net/th/id/OIP.HfpeYyZ54wun0WwbjthdiAHaEy?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Implante Subdérmico">
+                            <h4>Implante Subdérmico</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>Implante Subdérmico</h5>
+                            <ul>
+                                <li><strong>Descripción:</strong> Pequeña varilla del tamaño de un fósforo bajo la piel del brazo.</li>
+                                <li><strong>Duración:</strong> 3 a 5 años.</li>
+                                <li><strong>Eficacia:</strong> Más del 99%.</li>
+                                <li><strong>Ventajas:</strong> No requiere recordatorios diarios, reversible.</li>
+                                <li><strong>Desventajas:</strong> Posibles irregularidades menstruales.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tarjeta 5: Anillo --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://www.digix.club/ydc2024/wp-content/uploads/2024/03/Imagenanillocombinado1.png" alt="Anillo Vaginal">
+                            <h4>Anillo Vaginal</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>Anillo Vaginal</h5>
+                            <ul>
+                                <li><strong>Descripción:</strong> Aro flexible que se inserta en la vagina y libera hormonas durante 3 semanas.</li>
+                                <li><strong>Eficacia:</strong> 91–99%.</li>
+                                <li><strong>Ventajas:</strong> Cómodo, controlado por la usuaria.</li>
+                                <li><strong>Desventajas:</strong> Debe cambiarse mensualmente.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tarjeta 6: Parche --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://centroclinicobetanzos60.es/wp-content/uploads/2016/10/PARCHE-TRANSDÉRMICO-300x237.jpg" alt="Parche Anticonceptivo">
+                            <h4>Parche Anticonceptivo</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>Parche Anticonceptivo</h5>
+                            <ul>
+                                <li><strong>Descripción:</strong> Parche que se adhiere a la piel y libera hormonas.</li>
+                                <li><strong>Duración:</strong> Se cambia semanalmente (3 semanas sí, 1 no).</li>
+                                <li><strong>Eficacia:</strong> 91–99%.</li>
+                                <li><strong>Ventajas:</strong> No requiere dosis diarias.</li>
+                                <li><strong>Desventajas:</strong> Puede despegarse o causar irritación.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- MÉTODOS 2: Barrera --><div id="metodos_barrera" class="step slide" data-x="-500" data-y="1000" data-z="-1500" data-rotate-y="90" data-scale="2.5">
+            <h3>Métodos de Barrera</h3>
+            <p class="metodo-intro">
+                Crean una barrera física que impide que el espermatozoide llegue al óvulo. Son los únicos que también ofrecen protección contra ITS.
+            </p>
+            <div class="metodos-grid">
+                
+                <!-- Tarjeta 7: Condón Masculino --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZBklRHH7i6XBuw8vU-YVrQcAJ4Q4btStMuw&s" alt="Condón Masculino">
+                            <h4>Condón Masculino</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>Condón Masculino</h5>
+                            <ul>
+                                <li><strong>Descripción:</strong> Funda delgada de látex o poliuretano que se coloca en el pene erecto.</li>
+                                <li><strong>Eficacia:</strong> 85–98%.</li>
+                                <li><strong>Ventajas:</strong> Previene embarazos y Enfermedades de Transmisión Sexual (ITS).</li>
+                                <li><strong>Desventajas:</strong> Puede romperse o deslizarse si se usa incorrectamente.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 8: Condón Femenino --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/cf/Pr%C3%A9servatif_f%C3%A9minin.jpg" alt="Condón Femenino">
+                            <h4>Condón Femenino</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>Condón Femenino</h5>
+                            <ul>
+                                <li><strong>Descripción:</strong> Bolsa de poliuretano con anillos flexibles que se inserta en la vagina.</li>
+                                <li><strong>Eficacia:</strong> 79–95%.</li>
+                                <li><strong>Ventajas:</strong> Controlado por la mujer, protege contra ITS.</li>
+                                <li><strong>Desventajas:</strong> Puede ser menos accesible y más costoso.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 9: Diafragma --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXsRdZkGTPA_4jvRC_wbRoBtOjNWhj0DdYYw&s" alt="Diafragma">
+                            <h4>Diafragma y Capuchón</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>Diafragma y Capuchón Cervical</h5>
+                            <ul>
+                                <li><strong>Descripción:</strong> Copa de silicona o látex que cubre el cuello del útero, usada con espermicida.</li>
+                                <li><strong>Eficacia:</strong> 83–94%.</li>
+                                <li><strong>Ventajas:</strong> Sin hormonas, reutilizable.</li>
+                                <li><strong>Desventajas:</strong> Requiere colocación adecuada antes de cada relación.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MÉTODOS 3: DIU --><div id="metodos_diu" class="step slide" data-x="-2000" data-y="1000" data-z="1500" data-rotate-y="-45" data-scale="2.5">
+            <h3>Métodos Intrauterinos (DIU)</h3>
+            <p class="metodo-intro">
+                Pequeños dispositivos que un médico inserta dentro del útero. Ofrecen protección a largo plazo (de 3 a 12 años) y son altamente eficaces.
+            </p>
+            <div class="metodos-grid">
+                
+                <!-- Tarjeta 10: DIU Cobre --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDlVbTm5IpahdPSjQmNIYC4P-QxXQpBMxW8w&s" alt="DIU de Cobre">
+                            <h4>DIU de Cobre</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>DIU de Cobre</h5>
+                            <ul>
+                                <li><strong>Mecanismo:</strong> El cobre altera el ambiente uterino, impidiendo la fertilización.</li>
+                                <li><strong>Duración:</strong> 10–12 años.</li>
+                                <li><strong>Eficacia:</strong> >99%.</li>
+                                <li><strong>Ventajas:</strong> Sin hormonas, de larga duración.</li>
+                                <li><strong>Desventajas:</strong> Puede causar menstruaciones más abundantes los primeros meses.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tarjeta 11: DIU Hormonal --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYiddz8zZLjvF15LCBsnx4MO8vuDdSnjsf0A&s" alt="DIU Hormonal">
+                            <h4>DIU Hormonal</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>DIU Hormonal</h5>
+                            <ul>
+                                <li><strong>Mecanismo:</strong> Libera progestina que espesa el moco cervical y reduce el endometrio.</li>
+                                <li><strong>Duración:</strong> 3–8 años.</li>
+                                <li><strong>Eficacia:</strong> >99%.</li>
+                                <li><strong>Ventajas:</strong> Reduce o elimina el sangrado menstrual.</li>
+                                <li><strong>Desventajas:</strong> Requiere inserción médica.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <!-- MÉTODOS 4: Naturales, Emergencia, Definitivos --><div id="metodos_otros" class="step slide" data-x="-500" data-y="1000" data-z="1500" data-rotate-y="-90" data-scale="2.5">
+            <h3>Otros Métodos</h3>
+            <p class="metodo-intro">
+                Esta categoría incluye métodos basados en el ciclo (Naturales), opciones post-relación (Emergencia) y procedimientos quirúrgicos (Definitivos).
+            </p>
+            <div class="metodos-grid">
+                
+                <!-- Tarjeta 12: Naturales --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUFWl8-gEjKC4FQ4KYuku8JTfyc-nwnlcO2Q&s" alt="Método del Ritmo">
+                            <h4>Métodos Naturales (Ritmo)</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>Métodos Naturales</h5>
+                            <ul>
+                                <li><strong>Ejemplos:</strong> Método del ritmo, temperatura basal, método Billings (moco cervical).</li>
+                                <li><strong>Eficacia:</strong> 75–88% (si se aplican rigurosamente).</li>
+                                <li><strong>Ventajas:</strong> Sin efectos secundarios, sin costo, mayor conocimiento del cuerpo.</li>
+                                <li><strong>Desventajas:</strong> Requieren control y disciplina diaria; no protegen de ITS.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tarjeta 13: Emergencia --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://www.salud.mapfre.es/wp-content/uploads/2016/07/anticoncepcion-emergencia-3.jpg" alt="Píldora del Día Siguiente">
+                            <h4>Píldora de Emergencia</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>Píldora del Día Siguiente</h5>
+                            <ul>
+                                <li><strong>Descripción:</strong> Se usa después de una relación sin protección o fallo del método.</li>
+                                <li><strong>Mecanismo:</strong> Inhibe la ovulación; se toma dentro de las 72 horas posteriores.</li>
+                                <li><strong>Eficacia:</strong> Alta, pero no 100%.</li>
+                                <li><strong>Nota:</strong> No debe usarse como método regular.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 14: DIU Emergencia --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://familypact.org/wp-content/uploads/2023/02/copper-iud.jpg" alt="DIU de Emergencia">
+                            <h4>DIU de Cobre (Emergencia)</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>DIU de Cobre de Emergencia</h5>
+                            <ul>
+                                <li><strong>Descripción:</strong> Puede colocarse hasta 5 días después del contacto sin protección.</li>
+                                <li><strong>Eficacia:</strong> Es el método más eficaz de emergencia (>99%).</li>
+                                <li><strong>Ventajas:</strong> Puede dejarse como método anticonceptivo a largo plazo.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 15: Ligadura --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://familypact.org/wp-content/uploads/2022/06/iStock-1133181391-1024x775.jpg" alt="Ligadura de Trompas">
+                            <h4>Ligadura de Trompas</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>Ligadura de Trompas (Definitivo)</h5>
+                            <ul>
+                                <li><strong>Descripción:</strong> Cirugía que bloquea o corta las trompas de Falopio.</li>
+                                <li><strong>Eficacia:</strong> >99%.</li>
+                                <li><strong>Ventajas:</strong> Permanente.</li>
+                                <li><strong>Desventajas:</strong> No reversible; requiere cirugía.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tarjeta 16: Vasectomía --><div class="metodo-card">
+                    <div class="metodo-card-inner">
+                        <div class="metodo-card-front">
+                            <img src="https://c.files.bbci.co.uk/F687/production/_108011136_vasectomia-nc.png" alt="Vasectomía">
+                            <h4>Vasectomía</h4>
+                        </div>
+                        <div class="metodo-card-back">
+                            <h5>Vasectomía (Definitivo)</h5>
+                            <ul>
+                                <li><strong>Descripción:</strong> Cirugía que corta los conductos deferentes del hombre.</li>
+                                <li><strong>Eficacia:</strong> >99%.</li>
+                                <li><strong>Ventajas:</strong> Simple, segura, sin afectar hormonas ni deseo sexual.</li>
+                                <li><strong>Desventajas:</strong> Permanente (difícilmente reversible).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+        <!-- 
+            CLUSTER 2: MITOS Y REALIDADES
+            Posicionado a la derecha del overview.
+            Usaremos data-rotate-x para crear una "rueda" vertical.
+        --><div id="mitos" class="step slide" data-x="8000" data-y="1000" data-z="0" data-scale="3">
+            <h2>Mitos y Realidades</h2>
+            <p>Desmitificar es clave para tomar decisiones informadas. Explora los mitos más comunes.</p>
+        </div>
+
+        <div id="mito1" class="step slide" data-x="8000" data-y="1000" data-z="-1500" data-rotate-x="60" data-scale="2.5">
+            <div class="mito-realidad">
+                <h4 class="mito">MITO:</h4>
+                <p>“La píldora anticonceptiva causa infertilidad permanente”.</p>
+            </div>
+            <div class="mito-realidad">
+                <h4 class="realidad">REALIDAD:</h4>
+                <p>No hay evidencia de que los métodos hormonales de uso reversible causen infertilidad permanente; la fertilidad suele volver tras dejarlos.</p>
+            </div>
+        </div>
+        
+        <div id="mito2" class="step slide" data-x="8000" data-y="500" data-z="-1000" data-rotate-x="120" data-scale="2.5">
+            <div class="mito-realidad">
+                <h4 class="mito">MITO:</h4>
+                <p>“Los anticonceptivos hormonales causan gran aumento de peso”.</p>
+            </div>
+            <div class="mito-realidad">
+                <h4 class="realidad">REALIDAD:</h4>
+                <p>Las revisiones muestran que no hay evidencia sólida de que causen un aumento de peso significativo.</p>
+            </div>
+        </div>
+
+        <div id="mito3" class="step slide" data-x="8000" data-y="1000" data-z="1500" data-rotate-x="-60" data-scale="2.5">
+            <div class="mito-realidad">
+                <h4 class="mito">MITO:</h4>
+                <p>“El DIU puede moverse dentro del cuerpo, viajar al corazón”.</p>
+            </div>
+            <div class="mito-realidad">
+                <h4 class="realidad">REALIDAD:</h4>
+                <p>Es un mito. El DIU permanece en el útero y las perforaciones son extremadamente raras.</p>
+            </div>
+        </div>
+        
+        <div id="mito4" class="step slide" data-x="8000" data-y="1500" data-z="1000" data-rotate-x="-120" data-scale="2.5">
+            <div class="mito-realidad">
+                <h4 class="mito">MITO:</h4>
+                <p>“Todos los anticonceptivos también protegen contra infecciones de transmisión sexual (ITS)”.</p>
+            </div>
+            <div class="mito-realidad">
+                <h4 class="realidad">REALIDAD:</h4>
+                <p>Sólo los métodos de barrera (condones) reducen el riesgo de ITS; otros métodos no lo hacen.</p>
+            </div>
+        </div>
+        
+        <div id="mito5" class="step slide" data-x="8000" data-y="2000" data-z="500" data-rotate-x="180" data-scale="2.5">
+             <div class="mito-realidad">
+                <h4 class="mito">MITO:</h4>
+                <p>“Los antibióticos comunes reducen la eficacia de la píldora”.</p>
+            </div>
+            <div class="mito-realidad">
+                <h4 class="realidad">REALIDAD:</h4>
+                <p>Excepto algunos antibióticos muy específicos (como la rifampicina), la mayoría no afectan significativamente la eficacia.</p>
+            </div>
+             <div class="mito-realidad" style="margin-top: 20px;">
+                <h4 class="mito">MITO:</h4>
+                <p>“Se debe ‘descansar’ de la píldora para desintoxicarse”.</p>
+            </div>
+            <div class="mito-realidad">
+                <h4 class="realidad">REALIDAD:</h4>
+                <p>No hay necesidad médica de “descansar” de anticonceptivos hormonales si están supervisados por un médico.</p>
+            </div>
+        </div>
+
+
+        <!-- 
+            CLUSTER 3: RELACIONES SALUDABLES
+            Posicionado "debajo" del overview.
+        --><div id="relaciones" class="step slide" data-x="3000" data-y="5000" data-z="0" data-scale="3">
+            <h2>Relaciones Saludables</h2>
+            <p>Una relación saludable se basa en el respeto mutuo, la confianza y la comunicación abierta.</p>
+        </div>
+        
+        <div id="relaciones_factores" class="step slide" data-x="3000" data-y="5000" data-z="-1500" data-scale="2.5">
+            <h3>Factores Principales</h3>
+            <ul>
+                <li><b>Comunicación abierta y honesta:</b> poder expresar pensamientos y sentimientos sin temor.</li>
+                <li><b>Respeto:</b> valorar al otro, sus límites, opiniones y autonomía.</li>
+                <li><b>Confianza:</b> creer que la otra persona actúa en el bien de la relación.</li>
+                <li><b>Igualdad:</b> ambas partes tienen voz y responsabilidad en las decisiones.</li>
+                <li><b>Límites (Boundaries):</b> cada persona define qué comportamientos no acepta, y la otra los respeta.</li>
+                <li><b>Consentimiento:</b> fundamental en la intimidad sexual (debe ser libre, informado y reversible).</li>
+                <li><b>Apoyo mutuo:</b> apoyar el crecimiento y bienestar del otro.</li>
+                <li><b>Autonomía e identidad:</b> mantener individualidad, amistades y actividades.</li>
+            </ul>
+        </div>
+        
+        <div id="relaciones_alerta" class="step slide" data-x="3000" data-y="5000" data-z="-3000" data-scale="2.5">
+            <h3 style="color: #FF6B6B;">Señales de una Relación No Saludable</h3>
+             <ul>
+                <li>Control excesivo (ropa, amistades, redes sociales).</li>
+                <li>Aislamiento de amigos o familia.</li>
+                <li>Ignorar los límites personales repetidamente.</li>
+                <li>Amenazas o manipulación emocional (chantaje).</li>
+                <li>Presión sexual o para hacer cosas que no deseas.</li>
+                <li>Control económico.</li>
+                <li>Decisiones unilaterales que afectan a ambos.</li>
+                <li>Falta de respeto (insultos, humillaciones).</li>
+            </ul>
+        </div>
+
+        <!-- 
+            CLUSTER 4: BIBLIOGRAFÍA
+            Posicionado "detrás" del overview, para el final.
+        --><div id="biblio" class="step slide" data-x="3000" data-y="1000" data-z="-5000" data-scale="2">
+            <h2>Bibliografía</h2>
+            <ul>
+                <li>Organización Mundial de la Salud. (2024). Anticoncepción.</li>
+                <li>Centers for Disease Control and Prevention. (2023). Reproductive health: Contraception.</li>
+                <li>National Institutes of Health. (2023). Birth control methods fact sheet.</li>
+                <li>Healthline. (2023). Common birth control myths and facts.</li>
+                <li>Ministerio de Salud del Perú. (2022). Métodos anticonceptivos modernos: Guía técnica para su uso y elección informada.</li>
+            </ul>
+            <h3 style="margin-top: 40px; text-align: center;">Fin de la Presentación</h3>
+        </div>
+
+    </div>
+
+    <!-- 4. Scripts (Three.js y Impress.js) --><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
+    
+    <!-- Librería Impress.js --><script src="https://cdn.jsdelivr.net/gh/impress/impress.js@2.0.0/js/impress.js"></script>
+
+    <script>
+        // --- SCRIPT 1: FONDO DE HUMO DINÁMICO (THREE.JS) ---
+        let scene, camera, renderer, smokeParticles = [];
+        const simplex = new SimplexNoise();
+        const clock = new THREE.Clock(); // Clock se crea una sola vez
+
+        function initThreeJS() {
+            const canvas = document.getElementById('bg-canvas');
+            
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+            camera.position.z = 1000;
+            
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            const light = new THREE.DirectionalLight(0x00BFFF, 0.8); // Aumentar intensidad de la luz
+            light.position.set(-1, 0, 1);
+            scene.add(light);
+
+            const smokeTexture = new THREE.TextureLoader().load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/212131/smoke.png');
+            const smokeMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x00BFFF, 
+                map: smokeTexture, 
+                transparent: true, 
+                opacity: 0.5 // Aumentar opacidad
+            });
+
+            const smokeGeo = new THREE.PlaneGeometry(400, 400); // Hacer partículas más grandes
+
+            for (let p = 0; p < 200; p++) { // Aumentar número de partículas
+                let particle = new THREE.Mesh(smokeGeo, smokeMaterial);
+                particle.position.set(
+                    (Math.random() - 0.5) * 1200,
+                    (Math.random() - 0.5) * 1200,
+                    (Math.random() - 0.5) * 1000
+                );
+                particle.rotation.z = Math.random() * 360;
+                scene.add(particle);
+                smokeParticles.push(particle);
+            }
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            let delta = clock.getDelta();
+
+            smokeParticles.forEach((particle) => {
+                let noise = simplex.noise3D(particle.position.x * 0.001, particle.position.y * 0.001, Date.now() * 0.00015);
+                particle.rotation.z += delta * 0.15; // Rotación más lenta
+                particle.position.x += noise * 4;
+                particle.position.y -= delta * 50; // Movimiento más constante y visible
+
+                // Si la partícula se va muy abajo, la reposicionamos arriba
+                if (particle.position.y < -600) {
+                    particle.position.y = 600;
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        initThreeJS();
+
+        // --- SCRIPT 2: INICIALIZAR IMPRESS.JS ---
+        const api = impress();
+        api.init();
+
+        // --- SCRIPT 3: INTERACTIVIDAD PARA FLIP CARDS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.metodo-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    card.classList.toggle('is-flipped');
+                });
+            });
+
+            const cardBacks = document.querySelectorAll('.metodo-card-back');
+            cardBacks.forEach(back => {
+                back.addEventListener('wheel', (event) => {
+                    event.stopPropagation();
+                }, { passive: false });
+                
+                back.addEventListener('touchmove', (event) => {
+                    event.stopPropagation();
+                }, { passive: false });
+            });
+        });
+
+    </script>
+</body>
+</html>
+
